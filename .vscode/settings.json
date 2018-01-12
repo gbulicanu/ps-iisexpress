@@ -1,0 +1,22 @@
+{
+    "cSpell.enabled": true,
+    "cSpell.maxNumberOfProblems": 500,
+    "cSpell.includeRegExpList": [
+        "#.*"
+    ],
+    "cSpell.enabledLanguageIds": [
+        "json",
+        "markdown",
+        "plaintext",
+        "powershell",
+        "yml"
+    ],
+    "cSpell.language": "en",
+    "cSpell.words": [
+        "USERPROFILE",
+        "appcmd",
+        "choco",
+        "chocolatey",
+        "hashtable"
+    ]
+}
