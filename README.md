@@ -1,7 +1,7 @@
 # IisExpressFunctions.ps1
 
 PowerShell utility functions to work with IIS Express relying on
-appcmd.exe. I'm using Pester PowerShell PS Unit tests.
+appcmd.exe. I'm using Pester PowerShell Unit tests.
 
 ## Installing Pester
 
