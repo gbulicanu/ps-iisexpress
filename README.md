@@ -3,6 +3,8 @@
 PowerShell utility functions to work with IIS Express relying on
 appcmd.exe. I'm using Pester PowerShell Unit tests.
 
+[![Build status](https://ci.appveyor.com/api/projects/status/ipk4ue9vb0jdnd9v/branch/master?svg=true)](https://ci.appveyor.com/project/gbfsoft/ps-iisexpress/branch/master)
+
 ## Installing Pester
 
 * Windows 10
