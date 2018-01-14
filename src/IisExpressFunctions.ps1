@@ -39,7 +39,7 @@ function Invoke-IisExpressAppCmd(
 
 function Get-IisExpressSiteUrl(
     [Parameter(Mandatory)] $AppName,
-    [Parameter()] [bool]$PreferHttps
+    [Parameter()] [switch]$PreferHttps
     )
 {
     $bindings = ([string](Invoke-IisExpressAppCmd "$AppName" "SITE" "list" `

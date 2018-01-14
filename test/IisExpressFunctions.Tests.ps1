@@ -68,7 +68,11 @@ Describe "Get-IisExpressAppUrl" {
                 return $Binding 
             }
 
-            $result = Get-IisExpressSiteUrl "App1" -PreferHttps $PreferHttps
+            $result = if($PreferHttps) { 
+                Get-IisExpressSiteUrl "App1" -PreferHttps
+            } else {
+                Get-IisExpressSiteUrl "App1"
+            }
 
             $result | Should Be $Expected
         }
