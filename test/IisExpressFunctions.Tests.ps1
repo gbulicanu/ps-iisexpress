@@ -2,10 +2,56 @@ $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path) -Replace '\.Tests\.', '.'
 . "$here\..\src\$sut"
 
+Describe "Invoke-IisExpressAppCmd" {
+    BeforeEach {
+        Mock Push-Location {}
+        Mock Pop-Location {}
+        Mock Set-Location {}
+    }
+
+    Context "With text:bindings as parameters" {
+        Mock Invoke-Expression {
+            param ([string]$Command)
+            
+            return $Command;
+        }
+
+        It "Invokes appcmd.exe with default /text: param"{
+            $siteIdentifier = "Site1"
+            $objectType = "SITE"
+            $command = "list"
+            $result = Invoke-IisExpressAppCmd $siteIdentifier `
+                $objectType $command -Parameters @{ text = "bindings"; }
+
+            $result | Should `
+                -Be ".\appcmd $command $objectType ""$siteIdentifier"" /text:bindings"
+        }
+    }
+
+    Context "Without Parameters" {
+        Mock Invoke-Expression {
+            param ([string]$Command)
+            
+            return $Command;
+        }
+
+        It "Invokes appcmd.exe with default /text:* param"{
+            $siteIdentifier = "Site1"
+            $objectType = "SITE"
+            $command = "list"
+            $result = Invoke-IisExpressAppCmd $siteIdentifier `
+                $objectType $command
+
+            $result | Should `
+                -Be ".\appcmd $command $objectType ""$siteIdentifier"" /text:*"
+        }
+    }
+}
 Describe "Get-IisExpressAppUrl" {
     BeforeEach {
         Mock Push-Location {}
         Mock Pop-Location {}
+        Mock Set-Location {}
     }
 
     Context "Single Binding" {
