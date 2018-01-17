@@ -32,7 +32,8 @@ function Invoke-IisExpressAppCmd(
 {
     # Prepare general parameters
     $parametersHash = [hashtable]$Parameters
-    $paramCmdLineArg = "/text:*"
+    $paramCmdLineArg = ""
+    if($Command -ieq "list") { $paramCmdLineArg = "/text:*"}
 
     if(($parametersHash -ne $null) -or ($parametersHash.Count -gt 0)) 
     {
@@ -51,8 +52,8 @@ function Invoke-IisExpressAppCmd(
 
     # Get result out of appcmd.exe invocation 
     $result = [string](
-        ".\appcmd $Command $($objectType.ToString().ToUpper()) ""$Identifier"" $($paramCmdLineArg.Trim())" `
-        | Invoke-Expression).Trim()
+        ".\appcmd $($Command.ToLower()) $($objectType.ToString().ToUpper()) $(
+            )""$Identifier"" $($paramCmdLineArg.Trim())" | Invoke-Expression).Trim()
     
     Pop-Location
 
@@ -98,4 +99,17 @@ function Get-IisExpressSiteUrl(
     
     $result = "${scheme}://${hostname}${portPart}"
     return $result
+}
+
+function Remove-IisExpressObject (
+    # Identifier of the object
+    [Parameter(Mandatory, Position=1)]
+    [string]$Identifier,
+    
+    # Object type
+    [Parameter(Mandatory, Position=2)]
+    [IisExpressObjectType]$ObjectType
+)
+{
+    Invoke-IisExpressAppCmd $Identifier $ObjectType delete
 }
