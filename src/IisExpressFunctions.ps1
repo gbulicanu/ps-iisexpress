@@ -99,3 +99,15 @@ function Get-IisExpressSiteUrl(
     $result = "${scheme}://${hostname}${portPart}"
     return $result
 }
+
+function Remove-IisExpressObject (
+    # Identifier of the object
+    [Parameter(Mandatory, Position=1)]
+    [string]$Identifier,
+    
+    # Object type
+    [Parameter(Mandatory, Position=2)]
+    [IisExpressObjectType]$ObjectType
+)
+{
+}

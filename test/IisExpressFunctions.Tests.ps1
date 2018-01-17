@@ -124,3 +124,50 @@ Describe "Get-IisExpressAppUrl" {
         }
     }
 }
+
+Describe "Remove-IisExpressObject" {
+    Context "Invalid Parameters" {
+        It "Throws"{
+            { Remove-IisExpressObject "" -ObjectType Site } | Should -Throw
+        }
+    }
+
+    Context "Valid Parameters" {
+        BeforeAll {
+            Mock Push-Location {}
+            Mock Pop-Location {}
+            Mock Set-Location {}
+        }
+
+        It "Given -Identifier '<Identifier>' and -ObjectType '<ObjectType>', it generates '<Expected>' command" -TestCases @(
+            @{
+                Identifier = 'WebSite1';
+                ObjectType = [IisExpressObjectType]::Site;
+                Expected = ".\appcmd delete SITE ""WebSite1"""
+            }
+            @{
+                Identifier = 'WebSite1/App1';
+                ObjectType = [IisExpressObjectType]::App;
+                Expected = ".\appcmd delete APP ""WebSite1/App1"""
+            }
+
+            @{
+                Identifier = 'AppPool1';
+                ObjectType = [IisExpressObjectType]::App;
+                Expected = ".\appcmd delete APPPOOL ""AppPool1"""
+            }
+        ){
+            param ($Identifier, $ObjectType, $Expected)
+            
+            Mock Invoke-Expression {
+                param ($Command)
+                
+                return $Command;
+            }
+
+            $result = Remove-IisExpressObject $Identifier $ObjectType
+
+            $result | Should -Be $Expected
+        }
+    }
+}
