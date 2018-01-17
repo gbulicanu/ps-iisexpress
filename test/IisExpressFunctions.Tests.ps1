@@ -16,7 +16,7 @@ Describe "Invoke-IisExpressAppCmd" {
             return $Command;
         }
 
-        It "Invokes appcmd.exe with parameters passed"{
+        It "Invokes appcmd.exe with parameters passed" {
             $siteIdentifier = "Site1"
             $objectType = [IisExpressObjectType]::Site
             $command = "list"
@@ -24,7 +24,8 @@ Describe "Invoke-IisExpressAppCmd" {
                 $objectType $command -Parameters @{ text = "bindings"; }
 
             $result | Should `
-                -Be ".\appcmd $command $($objectType.ToString().ToUpper()) ""$siteIdentifier"" /text:bindings"
+                -Be ".\appcmd $command $($objectType.ToString().ToUpper()) $(
+                    )""$siteIdentifier"" /text:bindings"
         }
     }
 
@@ -35,7 +36,7 @@ Describe "Invoke-IisExpressAppCmd" {
             return $Command;
         }
 
-        It "Invokes appcmd.exe with default /text:* param"{
+        It "Invokes appcmd.exe with default /text:* param" {
             $siteIdentifier = "Site1"
             $objectType = [IisExpressObjectType]::Site
             $command = "list"
@@ -43,7 +44,8 @@ Describe "Invoke-IisExpressAppCmd" {
                 $objectType $command
 
             $result | Should `
-                -Be ".\appcmd $command $($objectType.ToString().ToUpper()) ""$siteIdentifier"" /text:*"
+                -Be ".\appcmd $command $($objectType.ToString().ToUpper()) $(
+                    )""$siteIdentifier"" /text:*"
         }
     }
 }
@@ -61,7 +63,8 @@ Describe "Get-IisExpressAppUrl" {
             @{ Binding = 'http/:80:localhost'  ; Expected = 'http://localhost' }
             @{ Binding = 'https/:443:localhost'   ; Expected = 'https://localhost' }
             @{ Binding = 'https/*:443:'  ; Expected = 'https://localhost' }
-            ) {
+            ) `
+        {
             param ($Binding, $Expected)
 
             Mock Invoke-IisExpressAppCmd { 
@@ -76,11 +79,20 @@ Describe "Get-IisExpressAppUrl" {
 
     Context "Multiple Bindings" {
         It "Given -Binding '<Binding>', it returns '<Expected>'." -TestCases  @(
-            @{ Binding = 'http/:8080:localhost,*:8443:'; Expected = 'http://localhost:8080' }
-            @{ Binding = 'http/:8080:*,https/*:8443:'  ; Expected = 'http://localhost:8080' }
-            @{ Binding = 'http/:80:localhost,https/*:8443:'  ; Expected = 'http://localhost' }
-            @{ Binding = 'https/:443:localhost,https/*:8443:'   ; Expected = 'https://localhost' }
-            ) {
+            @{ 
+                Binding = 'http/:8080:localhost,*:8443:';
+                Expected = 'http://localhost:8080' }
+            @{
+                Binding = 'http/:8080:*,https/*:8443:';
+                Expected = 'http://localhost:8080' }
+            @{
+                Binding = 'http/:80:localhost,https/*:8443:';
+                Expected = 'http://localhost' }
+            @{
+                Binding = 'https/:443:localhost,https/*:8443:';
+                Expected = 'https://localhost' }) `
+        {
+            
             param ($Binding, $Expected)
 
             Mock Invoke-IisExpressAppCmd { 
@@ -94,7 +106,9 @@ Describe "Get-IisExpressAppUrl" {
     }
 
     Context "Multiple Bindings with HTTPS" {
-        It "Given -Binding '<Binding>' and -PreferHttps '<PreferHttps>', it returns '<Expected>'." -TestCases  @(
+        It "Given -Binding '<Binding>' and -PreferHttps '<PreferHttps>', $(
+            )it returns '<Expected>'." `
+            -TestCases  @(
             @{
                 Binding = 'http/:80:localhost,https/*:8443:';
                 PreferHttps = $true;
@@ -107,7 +121,9 @@ Describe "Get-IisExpressAppUrl" {
                 Binding = 'https/:443:localhost,http/*:9001:';
                 PreferHttps = $true;
                 Expected = 'https://localhost' }
-            ) {
+            ) `
+        {
+
             param ($Binding, $PreferHttps, $Expected)
 
             Mock Invoke-IisExpressAppCmd { 
@@ -128,7 +144,7 @@ Describe "Get-IisExpressAppUrl" {
 Describe "Remove-IisExpressObject" {
     Context "Invalid Parameters" {
         It "Throws"{
-            { Remove-IisExpressObject "" -ObjectType Site } | Should -Throw
+            { Remove-IisExpressObject "" Site } | Should -Throw
         }
     }
 
@@ -139,7 +155,9 @@ Describe "Remove-IisExpressObject" {
             Mock Set-Location {}
         }
 
-        It "Given -Identifier '<Identifier>' and -ObjectType '<ObjectType>', it generates '<Expected>' command" -TestCases @(
+        It "Given -Identifier '<Identifier>' and -ObjectType '<ObjectType>', $(
+            )it generates '<Expected>' command" `
+            -TestCases @(
             @{
                 Identifier = 'WebSite1';
                 ObjectType = [IisExpressObjectType]::Site;
@@ -153,10 +171,10 @@ Describe "Remove-IisExpressObject" {
 
             @{
                 Identifier = 'AppPool1';
-                ObjectType = [IisExpressObjectType]::App;
+                ObjectType = [IisExpressObjectType]::AppPool;
                 Expected = ".\appcmd delete APPPOOL ""AppPool1"""
-            }
-        ){
+            }) `
+        {
             param ($Identifier, $ObjectType, $Expected)
             
             Mock Invoke-Expression {
