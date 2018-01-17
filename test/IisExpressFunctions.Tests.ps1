@@ -16,15 +16,15 @@ Describe "Invoke-IisExpressAppCmd" {
             return $Command;
         }
 
-        It "Invokes appcmd.exe with default /text: param"{
+        It "Invokes appcmd.exe with parameters passed"{
             $siteIdentifier = "Site1"
-            $objectType = "SITE"
+            $objectType = [IisExpressObjectType]::Site
             $command = "list"
             $result = Invoke-IisExpressAppCmd $siteIdentifier `
                 $objectType $command -Parameters @{ text = "bindings"; }
 
             $result | Should `
-                -Be ".\appcmd $command $objectType ""$siteIdentifier"" /text:bindings"
+                -Be ".\appcmd $command $($objectType.ToString().ToUpper()) ""$siteIdentifier"" /text:bindings"
         }
     }
 
@@ -37,13 +37,13 @@ Describe "Invoke-IisExpressAppCmd" {
 
         It "Invokes appcmd.exe with default /text:* param"{
             $siteIdentifier = "Site1"
-            $objectType = "SITE"
+            $objectType = [IisExpressObjectType]::Site
             $command = "list"
             $result = Invoke-IisExpressAppCmd $siteIdentifier `
                 $objectType $command
 
             $result | Should `
-                -Be ".\appcmd $command $objectType ""$siteIdentifier"" /text:*"
+                -Be ".\appcmd $command $($objectType.ToString().ToUpper()) ""$siteIdentifier"" /text:*"
         }
     }
 }
