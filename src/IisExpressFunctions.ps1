@@ -1,12 +1,33 @@
+Add-Type -TypeDefinition @"
+   public enum IisExpressObjectType
+   {
+      Site,
+      App,
+      Vdir,
+      AppPool,
+      Config,
+      Module,
+      Trace
+   }
+"@
+
+
 function Invoke-IisExpressAppCmd(
     # Identifier of the object
-    [Parameter(Mandatory, Position=1)] [string]$Identifier,
-    # ObjectType SITE, APP, VDIR, APPPOOL, CONFIG, MODULE,or TRACE
-    [Parameter(Mandatory, Position=2)] [string]$ObjectType,
+    [Parameter(Mandatory, Position=1)]
+    [string]$Identifier,
+
+    # Object type
+    [Parameter(Mandatory, Position=2)]
+    [IisExpressObjectType]$ObjectType,
+
     # Command to pass: list, etc.
-    [Parameter(Mandatory, Position=3)] [string]$Command,
+    [Parameter(Mandatory, Position=3)]
+    [string]$Command,
+
     # General parameters
-    [Parameter()] [hashtable]$Parameters
+    [Parameter()]
+    [hashtable]$Parameters
 )
 {
     # Prepare general parameters
@@ -29,7 +50,8 @@ function Invoke-IisExpressAppCmd(
     Set-Location "$env:ProgramW6432\IIS Express"
 
     # Get result out of appcmd.exe invocation 
-    $result = [string](".\appcmd $Command $ObjectType ""$Identifier"" $($paramCmdLineArg.Trim())" `
+    $result = [string](
+        ".\appcmd $Command $($objectType.ToString().ToUpper()) ""$Identifier"" $($paramCmdLineArg.Trim())" `
         | Invoke-Expression).Trim()
     
     Pop-Location
