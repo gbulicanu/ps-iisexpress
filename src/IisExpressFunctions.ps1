@@ -67,18 +67,12 @@ function Invoke-IisExpressAppCmd(
         ""    
     }
     # Get result out of appcmd.exe invocation 
-    $result = [string](
-        ".\appcmd $($Command.ToLower()) $($objectType.ToString().ToUpper()) $(
-            )$identifierParam$($paramCmdLineArg.Trim())" | Invoke-Expression).Trim()
+    $result = ".\appcmd $($Command.ToLower()) $($objectType.ToString().ToUpper()) $(
+            )$identifierParam$($paramCmdLineArg.Trim())" | Invoke-Expression
     
     Pop-Location
 
-    if(($Command -ieq "list") -and [string]::IsNullOrWhiteSpace($result))
-    {
-        Throw "$objectType with identifier '$Identifier' not found"
-    }
-
-    return $result.Trim();
+    if($result -eq $null) { return $result } else { return $result.Trim() }
 }
 
 function Get-IisExpressSiteUrl(
@@ -146,4 +140,20 @@ function New-IisExpressObject (
 )
 {
     Invoke-IisExpressAppCmd $null $ObjectType add -Parameters $AdditionalParameters
+}
+
+
+function Test-IisExpressObject (
+    # Identifier of the object
+    [Parameter(Mandatory, Position=1)]
+    [string]$Identifier,
+
+    # Object type
+    [Parameter(Mandatory, Position=2)]
+    [IisExpressObjectType]$ObjectType
+)
+{
+    $result = Invoke-IisExpressAppCmd $Identifier $ObjectType list
+
+    return -not ([string]::IsNullOrWhiteSpace($result))
 }

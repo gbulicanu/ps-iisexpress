@@ -48,6 +48,21 @@ Describe "Invoke-IisExpressAppCmd" {
                     )""$siteIdentifier"" /text:*"
         }
     }
+
+    Context "In-Existent Objects" {
+        Mock Invoke-Expression {
+            return $null;
+        }
+
+        It "Returns empty or null string" {
+            $siteIdentifier = "Unknown1"
+            $objectType = [IisExpressObjectType]::Site
+            $command = "list"
+            $result = Invoke-IisExpressAppCmd $siteIdentifier $objectType $command
+
+            $result | Should -BeNullOrEmpty
+        }
+    }
 }
 Describe "Get-IisExpressAppUrl" {
     BeforeEach {
@@ -246,6 +261,49 @@ Describe "New-IisExpressObject" {
             $result = New-IisExpressObject $ObjectType $AdditionalParameters
 
             $result | Should -Be $Expected
+        }
+    }
+}
+
+Describe "Test-IisExpressObject" {
+    Context "Invalid Parameters" {
+        It "Throws"{
+            { Test-IisExpressObject "" Site } | Should -Throw
+            { Test-IisExpressObject "Id1" Unknown } | Should -Throw
+        }
+    }
+
+    Context "Valid Parameters" {
+        BeforeAll {
+            Mock Push-Location {}
+            Mock Pop-Location {}
+            Mock Set-Location {}
+        }
+
+        It "Given existing object, it returns `$true" {
+            $existingSite = "WebSite1"
+            $objectType = [IisExpressObjectType]::Site
+            
+            Mock Invoke-Expression {
+                return "WebSite1 exists";
+            }
+
+            $result = Test-IisExpressObject $existingSite $objectType
+
+            $result | Should -Be $true
+        }
+
+        It "Given in-existent object, it returns `$false" {
+            $existingSite = "WebSite1"
+            $objectType = [IisExpressObjectType]::Site
+            
+            Mock Invoke-Expression {
+                return "";
+            }
+
+            $result = Test-IisExpressObject $existingSite $objectType
+
+            $result | Should -Be $false
         }
     }
 }
