@@ -11,10 +11,20 @@ Add-Type -TypeDefinition @"
    }
 "@
 
+Add-Type -TypeDefinition @"
+   public enum IisExpressCommand
+   {
+      List,
+      Add,
+      Set,
+      Delete
+   }
+"@
+
 
 function Invoke-IisExpressAppCmd(
     # Identifier of the object
-    [Parameter(Mandatory, Position=1)]
+    [Parameter(Position=1)]
     [string]$Identifier,
 
     # Object type
@@ -27,22 +37,20 @@ function Invoke-IisExpressAppCmd(
 
     # General parameters
     [Parameter()]
-    [hashtable]$Parameters
+    $Parameters
 )
 {
-    # Prepare general parameters
-    $parametersHash = [hashtable]$Parameters
     $paramCmdLineArg = ""
     if($Command -ieq "list") { $paramCmdLineArg = "/text:*"}
 
-    if(($parametersHash -ne $null) -or ($parametersHash.Count -gt 0)) 
+    if(($Parameters -ne $null) -or ($Parameters.Count -gt 0)) 
     {
         $paramCmdLineArg = ""
     }
 
-    foreach($key in $parametersHash.Keys)
+    foreach($key in $Parameters.Keys)
     {
-        $paramCmdLineArg = "$paramCmdLineArg /$($key):$($parametersHash["$key"]) "
+        $paramCmdLineArg = "$paramCmdLineArg/$($key):$($Parameters["$key"]) "
     }
 
     Push-Location
@@ -50,14 +58,27 @@ function Invoke-IisExpressAppCmd(
     # Set current directory of IIS Express (x64 on x64 OS otherwise 32-bit)
     Set-Location "$env:ProgramW6432\IIS Express"
 
+    $identifierParam = if(-not [string]::IsNullOrWhiteSpace($Identifier)) 
+    {
+         """$Identifier"" "
+    }
+    else 
+    {
+        ""    
+    }
     # Get result out of appcmd.exe invocation 
     $result = [string](
         ".\appcmd $($Command.ToLower()) $($objectType.ToString().ToUpper()) $(
-            )""$Identifier"" $($paramCmdLineArg.Trim())" | Invoke-Expression).Trim()
+            )$identifierParam$($paramCmdLineArg.Trim())" | Invoke-Expression).Trim()
     
     Pop-Location
 
-    return $result;
+    if(($Command -ieq "list") -and [string]::IsNullOrWhiteSpace($result))
+    {
+        Throw "$objectType with identifier '$Identifier' not found"
+    }
+
+    return $result.Trim();
 }
 
 function Get-IisExpressSiteUrl(
@@ -112,4 +133,17 @@ function Remove-IisExpressObject (
 )
 {
     Invoke-IisExpressAppCmd $Identifier $ObjectType delete
+}
+
+function New-IisExpressObject (
+    # Object type
+    [Parameter(Mandatory, Position=1)]
+    [IisExpressObjectType]$ObjectType,
+
+    # Additional parameters
+    [Parameter(Mandatory, Position=2)]
+    $AdditionalParameters
+)
+{
+    Invoke-IisExpressAppCmd $null $ObjectType add -Parameters $AdditionalParameters
 }
