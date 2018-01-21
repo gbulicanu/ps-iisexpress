@@ -145,6 +145,7 @@ Describe "Remove-IisExpressObject" {
     Context "Invalid Parameters" {
         It "Throws"{
             { Remove-IisExpressObject "" Site } | Should -Throw
+            { Remove-IisExpressObject "Id1" Unknown } | Should -Throw
         }
     }
 
@@ -184,6 +185,65 @@ Describe "Remove-IisExpressObject" {
             }
 
             $result = Remove-IisExpressObject $Identifier $ObjectType
+
+            $result | Should -Be $Expected
+        }
+    }
+}
+
+Describe "New-IisExpressObject" {
+    Context "Invalid Parameters" {
+        It "Throws"{
+            { New-IisExpressObject Unknown } | Should -Throw
+        }
+    }
+
+    Context "Valid Parameters" {
+        BeforeAll {
+            Mock Push-Location {}
+            Mock Pop-Location {}
+            Mock Set-Location {}
+        }
+
+        It "Given -ObjectType '<ObjectType>', it generates '<Expected>' command" `
+            -TestCases @(
+            @{
+                ObjectType = [IisExpressObjectType]::Site;
+                AdditionalParameters = [ordered]@{
+                    name = "WebSite1"
+                    bindings = "http/*:81:";
+                    physicalPath = "C:\d";
+                }
+                Expected = ".\appcmd add SITE /name:WebSite1 /bindings:http/*:81: $(
+                    )/physicalPath:C:\d"
+            }
+            @{
+                ObjectType = [IisExpressObjectType]::App;
+                AdditionalParameters = [ordered]@{ 
+                    "site.name" = "WebSite1";
+                    name = "app1";
+                    physicalPath = "C:\d\app1"
+                }
+                Expected = ".\appcmd add APP /site.name:WebSite1 /name:app1 $(
+                    )/physicalPath:C:\d\app1"
+            }
+            @{
+                ObjectType = [IisExpressObjectType]::AppPool;
+                AdditionalParameters = @{ 
+                    "name" = "apppool1";
+                }
+                Expected = ".\appcmd add APPPOOL /name:apppool1"
+            }) `
+        {
+            param ($ObjectType, $AdditionalParameters, $Expected)
+            
+            Mock Invoke-Expression {
+                param ($Command)
+                
+                return $Command;
+            }
+
+            $result = New-IisExpressObject $ObjectType $AdditionalParameters
 
             $result | Should -Be $Expected
         }
